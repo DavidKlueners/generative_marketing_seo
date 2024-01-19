@@ -15,9 +15,14 @@ async def add_links_to_task_list(links, task_list):
     return link_tasks_dict
 
 
+async def process_individual_link(link):
+    # Simulate processing time for each link
+    await asyncio.sleep(4)
+
+
 async def process_links(links, task_list):
     """
-    Dummy function to simulate processing of links.
+    Function to process the list of links.
     """
     # Add links to task list and get the dictionary of tasks
     link_tasks_dict = await add_links_to_task_list(links, task_list)
@@ -27,8 +32,7 @@ async def process_links(links, task_list):
         link_task = link_tasks_dict[link]
         link_task.status = cl.TaskStatus.RUNNING
         await task_list.send()
-        # Simulate processing time for each link
-        await asyncio.sleep(4)  # Simulate 2 seconds per link for demonstration
+        await process_individual_link(link=link)
         link_task.status = cl.TaskStatus.DONE
         await task_list.send()
 
