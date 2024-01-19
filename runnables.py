@@ -8,6 +8,7 @@ from config import (
 from langchain.chains.openai_functions import (
     create_structured_output_runnable,
 )
+from data_models import SEOKeywords
 
 #### OpenAI model to use
 model = ChatOpenAI(model=OPENAI_MODEL, temperature=OPENAI_TEMPERATURE)
@@ -17,3 +18,23 @@ prompt = ChatPromptTemplate.from_template(
     "You are a helpful assistant for the topic of SEO. Answer the following user question: {user_question}. Also include knowledge from the prior conversation history if necessary: {conversation_history}"
 )
 prompt_input_chain = prompt | model | StrOutputParser()
+
+
+#### chain to generate SEO keywords
+model_gpt4 = ChatOpenAI(model="gpt-4-1106-preview", temperature=0)
+seo_keyword_generator_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            (
+                """
+                You are extracting keywords from html, that can be used in website content to improve SEO.
+                Use the following html to extract the keywords: {html_input}
+                """
+            ),
+        ),
+    ]
+)
+seo_keyword_generator_runnable = create_structured_output_runnable(
+    SEOKeywords, model_gpt4, seo_keyword_generator_prompt
+)

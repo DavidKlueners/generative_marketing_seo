@@ -10,6 +10,7 @@ python = "^3.11"
 chainlit = "^1.0.101"
 openai = "^1.8.0"
 langchain = "^0.1.1"
+beautifulsoup4 = "^4.12.3"
 
 
 [build-system]

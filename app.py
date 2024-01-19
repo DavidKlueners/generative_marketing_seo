@@ -1,6 +1,7 @@
 import chainlit as cl
-from runnables import prompt_input_chain
+from runnables import prompt_input_chain, seo_keyword_generator_runnable
 import asyncio  # Required for asynchronous sleep
+from link_processing import fetch_page_content, extract_text_from_html
 
 
 async def add_links_to_task_list(links, task_list):
@@ -16,8 +17,12 @@ async def add_links_to_task_list(links, task_list):
 
 
 async def process_individual_link(link):
-    # Simulate processing time for each link
-    await asyncio.sleep(4)
+    content, headers = await fetch_page_content(link)
+    text = await extract_text_from_html(content)
+    seo_keywords = await seo_keyword_generator_runnable.ainvoke(
+        input={"html_input": text}
+    )
+    print(seo_keywords)
 
 
 async def process_links(links, task_list):
