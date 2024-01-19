@@ -16,13 +16,13 @@ async def add_links_to_task_list(links, task_list):
     return link_tasks_dict
 
 
-async def process_individual_link(link):
+async def process_individual_link(link, task_list):
     content, headers = await fetch_page_content(link)
     text = await extract_text_from_html(content)
     seo_keywords = await seo_keyword_generator_runnable.ainvoke(
         input={"html_input": text}
     )
-    print(seo_keywords)
+    return seo_keywords
 
 
 async def process_links(links, task_list):
@@ -31,15 +31,16 @@ async def process_links(links, task_list):
     """
     # Add links to task list and get the dictionary of tasks
     link_tasks_dict = await add_links_to_task_list(links, task_list)
-
+    keywords = []
     # Simulate processing for each link
     for link in links:
         link_task = link_tasks_dict[link]
         link_task.status = cl.TaskStatus.RUNNING
         await task_list.send()
-        await process_individual_link(link=link)
+        keywords.append(await process_individual_link(link=link, task_list=task_list))
         link_task.status = cl.TaskStatus.DONE
         await task_list.send()
+    print(keywords)
 
 
 @cl.on_chat_start
@@ -55,7 +56,7 @@ async def main():
     await task_list.add_task(asking_task_1)
     # Create another task that is in the ready state
     looking_task_2 = cl.Task(
-        title="Looking through the websites...", status=cl.TaskStatus.READY
+        title="Checking wesbites for keywords...", status=cl.TaskStatus.READY
     )
     await task_list.add_task(looking_task_2)
     # Update the task list in the interface

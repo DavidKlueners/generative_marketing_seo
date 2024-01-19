@@ -33,7 +33,14 @@ class MyHTMLParser(HTMLParser):
         super().__init__()
         self.text_with_tags = []
         self.current_tags = []
-        self.ignore_tags = {'script', 'meta', 'link', 'svg', 'path'}  # Add more tags as needed
+        self.ignore_tags = {
+            "script",
+            "meta",
+            "link",
+            "svg",
+            "path",
+            "nav",
+        }  # Add more tags as needed
         self.skip_content = False
 
     def handle_starttag(self, tag, attrs):
@@ -54,7 +61,8 @@ class MyHTMLParser(HTMLParser):
         if not self.skip_content and data.strip():
             self.text_with_tags.append(html.escape(data))
 
+
 async def extract_text_from_html(html_content):
     parser = MyHTMLParser()
     parser.feed(html_content)
-    return ''.join(parser.text_with_tags)
+    return "".join(parser.text_with_tags)
