@@ -1,5 +1,14 @@
 import chainlit as cl
 from runnables import prompt_input_chain
+import asyncio  # Required for asynchronous sleep
+
+
+async def process_links(links):
+    """
+    Dummy function to simulate processing of links.
+    """
+    # Simulate processing time
+    await asyncio.sleep(5)  # Waits for 5 seconds
 
 
 @cl.on_chat_start
@@ -8,15 +17,15 @@ async def main():
         "message_history",
         [{"role": "system", "content": "You are a helpful assistant."}],
     )
-    while True:  # Loop to allow re-entering of URLs if Cancel is pressed
+    while True:
         res = await cl.AskUserMessage(
             content="Please provide a comma separated list of website URLs here, the first one should be your own website, the other ones are relevant competitor websites.",
             timeout=10,
         ).send()
 
         if res:
-            urls = res["output"].split(",")  # Parsing the comma-separated URLs
-            urls = [url.strip() for url in urls]  # Removing any leading/trailing spaces
+            urls = res["output"].split(",")
+            urls = [url.strip() for url in urls]
 
             await cl.Message(
                 content=f"The website links you provided are: {urls}.",
@@ -31,10 +40,19 @@ async def main():
             ).send()
 
             if res and res.get("value") == "continue":
-                await cl.Message(
-                    content="Continue!",
+                # Display loading message
+                loading_msg = await cl.Message(
+                    content="Processing your links, please wait...",
                 ).send()
-                break  # Exiting the loop if Continue is pressed
+
+                # Call the dummy function to process links
+                await process_links(urls)
+
+                # Update loading message to completion message
+                success_msg = await cl.Message(
+                    content="Processing complete..Returning SEO content.",
+                ).send()
+                break
 
 
 @cl.on_message
