@@ -3,12 +3,34 @@ from runnables import prompt_input_chain
 import asyncio  # Required for asynchronous sleep
 
 
-async def process_links(links):
+async def add_links_to_task_list(links, task_list):
+    link_tasks_dict = {}
+    for link in links:
+        link_task = cl.Task(
+            title=f"Checking website: {link}", status=cl.TaskStatus.READY
+        )
+        await task_list.add_task(link_task)
+        link_tasks_dict[link] = link_task
+    await task_list.send()
+    return link_tasks_dict
+
+
+async def process_links(links, task_list):
     """
     Dummy function to simulate processing of links.
     """
-    # Simulate processing time
-    await asyncio.sleep(5)  # Waits for 5 seconds
+    # Add links to task list and get the dictionary of tasks
+    link_tasks_dict = await add_links_to_task_list(links, task_list)
+
+    # Simulate processing for each link
+    for link in links:
+        link_task = link_tasks_dict[link]
+        link_task.status = cl.TaskStatus.RUNNING
+        await task_list.send()
+        # Simulate processing time for each link
+        await asyncio.sleep(4)  # Simulate 2 seconds per link for demonstration
+        link_task.status = cl.TaskStatus.DONE
+        await task_list.send()
 
 
 @cl.on_chat_start
@@ -62,7 +84,7 @@ async def main():
                 await task_list.send()
 
                 # Call the dummy function to process links
-                await process_links(urls)
+                await process_links(urls, task_list)
                 looking_task_2.status = cl.TaskStatus.DONE
                 task_list.status = "DONE"
 
