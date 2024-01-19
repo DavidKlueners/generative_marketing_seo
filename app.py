@@ -8,26 +8,33 @@ async def main():
         "message_history",
         [{"role": "system", "content": "You are a helpful assistant."}],
     )
-    res = await cl.AskUserMessage(
-        content="Please provide a comma separated list of website URLs here, the first one should be your own website, the other ones are relevant competitor websites.",
-        timeout=10,
-    ).send()
-    if res:
-        await cl.Message(
-            content=f"The website links you provided are: {res['output']}.",
-        ).send()
-        res = await cl.AskActionMessage(
-            content="If these links are correct, press 'Continue'!",
-            actions=[
-                cl.Action(name="continue", value="continue", label="✅ Continue"),
-                cl.Action(name="cancel", value="cancel", label="❌ Cancel"),
-            ],
+    while True:  # Loop to allow re-entering of URLs if Cancel is pressed
+        res = await cl.AskUserMessage(
+            content="Please provide a comma separated list of website URLs here, the first one should be your own website, the other ones are relevant competitor websites.",
+            timeout=10,
         ).send()
 
-        if res and res.get("value") == "continue":
+        if res:
+            urls = res["output"].split(",")  # Parsing the comma-separated URLs
+            urls = [url.strip() for url in urls]  # Removing any leading/trailing spaces
+
             await cl.Message(
-                content="Continue!",
+                content=f"The website links you provided are: {urls}.",
             ).send()
+
+            res = await cl.AskActionMessage(
+                content="If these links are correct, press 'Continue'! If you want to enter them again, press 'Cancel'.",
+                actions=[
+                    cl.Action(name="continue", value="continue", label="✅ Continue"),
+                    cl.Action(name="cancel", value="cancel", label="❌ Cancel"),
+                ],
+            ).send()
+
+            if res and res.get("value") == "continue":
+                await cl.Message(
+                    content="Continue!",
+                ).send()
+                break  # Exiting the loop if Continue is pressed
 
 
 @cl.on_message
