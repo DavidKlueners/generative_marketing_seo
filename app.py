@@ -13,16 +13,32 @@ async def process_links(links):
 
 @cl.on_chat_start
 async def main():
+    # Create the TaskList
+    task_list = cl.TaskList()
+    task_list.status = "Running..."
+
+    # ADDING TASKS THAT THE AI WILL GO THROUGH
+    asking_task_1 = cl.Task(
+        title="Asking for website links...", status=cl.TaskStatus.RUNNING
+    )
+    await task_list.add_task(asking_task_1)
+    # Create another task that is in the ready state
+    looking_task_2 = cl.Task(
+        title="Looking through the websites...", status=cl.TaskStatus.READY
+    )
+    await task_list.add_task(looking_task_2)
+    # Update the task list in the interface
+    await task_list.send()
+
     cl.user_session.set(
         "message_history",
         [{"role": "system", "content": "You are a helpful assistant."}],
     )
+
     while True:
         res = await cl.AskUserMessage(
             content="Please provide a comma separated list of website URLs here, the first one should be your own website, the other ones are relevant competitor websites.",
-            timeout=10,
         ).send()
-
         if res:
             urls = res["output"].split(",")
             urls = [url.strip() for url in urls]
@@ -40,18 +56,18 @@ async def main():
             ).send()
 
             if res and res.get("value") == "continue":
-                # Display loading message
-                loading_msg = await cl.Message(
-                    content="Processing your links, please wait...",
-                ).send()
+                # Update the task statuses
+                asking_task_1.status = cl.TaskStatus.DONE
+                looking_task_2.status = cl.TaskStatus.RUNNING
+                await task_list.send()
 
                 # Call the dummy function to process links
                 await process_links(urls)
+                looking_task_2.status = cl.TaskStatus.DONE
+                task_list.status = "DONE"
 
-                # Update loading message to completion message
-                success_msg = await cl.Message(
-                    content="Processing complete..Returning SEO content.",
-                ).send()
+                await task_list.send()
+
                 break
 
 
