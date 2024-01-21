@@ -10,8 +10,8 @@ COPY . /app
 # Install project dependencies using pip instead of poetry
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 8080 available to the world outside this container, because that's where the app is listening and this is the default port that Google Cloud Run utilizes
-EXPOSE 8080
+# Make port 8000 available to the world outside this container
+EXPOSE 8000
 
 # Run your application
 CMD ["chainlit", "run", "app.py"]
