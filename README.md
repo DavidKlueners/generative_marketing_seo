@@ -6,6 +6,10 @@ poetry run chainlit run app.py -w
 
 docker build -t gen-marketing-seo .
 
+### or to build for deploying it on non-ARM architecture
+
+docker buildx build --platform linux/amd64 -t gen-marketing-seo .
+
 ## to run the docker image locally
 
 docker run -p 5002:8000 gen-marketing-seo
