@@ -8,7 +8,7 @@ from config import (
 from langchain.chains.openai_functions import (
     create_structured_output_runnable,
 )
-from data_models import SEOKeywords, SEOMetadata
+from data_models import SEOKeywords, SEOMetadata, ImprovedWebsiteContent
 
 #### OpenAI model to use
 model = ChatOpenAI(model=OPENAI_MODEL, temperature=OPENAI_TEMPERATURE)
@@ -58,4 +58,27 @@ seo_metadata_generator_prompt = ChatPromptTemplate.from_messages(
 )
 seo_metadata_generator_runnable = create_structured_output_runnable(
     SEOMetadata, model_gpt4, seo_metadata_generator_prompt
+)
+
+#### chain to generate improved webpage content
+model_gpt4 = ChatOpenAI(model="gpt-4-1106-preview", temperature=0)
+webpage_improvement_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            (
+                """
+                You are improving a webpages content based on user provided SEO keywords, keywords extracted from competitors, the webpages SEO title and  SEO description.
+                User provided keyowrds: {user_keywords}
+                Competitor keywords: {competitor_keywords}
+                SEO title: {seo_title}
+                SEO description: {seo_description}
+                Webpage content: {webpage_content}
+                """
+            ),
+        ),
+    ]
+)
+webpage_improvement_runnable = create_structured_output_runnable(
+    ImprovedWebsiteContent, model_gpt4, webpage_improvement_prompt
 )

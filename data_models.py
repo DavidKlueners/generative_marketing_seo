@@ -25,3 +25,11 @@ class SEOMetadata(BaseModel):
         ...,
         description="The SEO description provides a brief overview of the content, used in search engine results.",
     )
+
+class ImprovedWebsiteContent(BaseModel):
+    """ImprovedWebsiteContent represents a webpage's content after being optimized for SEO purposes."""
+
+    improved_website_content: str = Field(
+        ...,
+        description="A markdown formatted string representing the webpage's content after SEO improvements."
+    )

@@ -3,6 +3,7 @@ from runnables import (
     prompt_input_chain,
     seo_keyword_generator_runnable,
     seo_metadata_generator_runnable,
+    webpage_improvement_runnable,
 )
 import asyncio  # Required for asynchronous sleep
 from link_processing import (
@@ -219,6 +220,17 @@ async def main():
         }
     )
 
+    # generating content
+    improved_content = await webpage_improvement_runnable.ainvoke(
+        input={
+            "user_keywords": user_keywords,
+            "competitor_keywords": competitor_keyword_list,
+            "seo_title": metadata.seo_title,
+            "seo_description": metadata.seo_description,
+            "webpage_content": markdown_content,
+        }
+    )
+
     # setting overall status to done
     task_list.status = "DONE"
     await task_list.send()
@@ -240,9 +252,7 @@ async def main():
         elements=elements,
     ).send()
     ## Sending the final improved website content.
-    text_content = (
-        "### Hello, this is a text element showing the final website content."
-    )
+    text_content = improved_content.improved_website_content
     elements = [cl.Text(content=text_content, display="inline")]
 
     await cl.Message(
