@@ -38,3 +38,4 @@ seo_keyword_generator_prompt = ChatPromptTemplate.from_messages(
 seo_keyword_generator_runnable = create_structured_output_runnable(
     SEOKeywords, model_gpt4, seo_keyword_generator_prompt
 )
+

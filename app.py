@@ -52,9 +52,7 @@ async def get_user_input(
     question_for_user: str, task, task_list, optional_input: bool = False
 ):
     while True:
-        res = await cl.AskUserMessage(
-            content=question_for_user,
-        ).send()
+        res = await cl.AskUserMessage(content=question_for_user, timeout=6000).send()
         if res:
             urls = res["output"].split(",")
             urls = [url.strip() for url in urls]
