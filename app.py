@@ -57,50 +57,47 @@ async def get_user_input(
     question_for_user: str, task, task_list, optional_input: bool = False
 ):
     while True:
-        res = await cl.AskUserMessage(content=question_for_user, timeout=6000).send()
-        if res:
-            urls = res["output"].split(",")
-            urls = [url.strip() for url in urls]
+        actions = [cl.Action(name="input", value="input", label="💬 Enter Input")]
 
-            await cl.Message(
-                content=f"The input you provided is: {urls}.",
-            ).send()
+        if optional_input:
+            actions.append(cl.Action(name="skip", value="skip", label="❌ Skip"))
 
-            # Define the base actions
-            actions = [
-                cl.Action(name="continue", value="continue", label="✅ Continue"),
-                cl.Action(name="repeat", value="repeat", label="🔁 Repeat"),
-            ]
+        res = await cl.AskActionMessage(
+            content=question_for_user, actions=actions, timeout=6000
+        ).send()
 
-            # Add the 'Skip' action only if optional_input is True
-            if optional_input:
-                actions.append(cl.Action(name="skip", value="skip", label="❌ Skip"))
+        # Handle the skip action
+        if res and res.get("value") == "skip":
+            task.status = cl.TaskStatus.DONE
+            await task_list.send()
+            return None
 
-            # Adapt the action message based on optional_input
-            action_message_content = "If this input is correct, press 'Continue'! If you want to enter the input again, press 'Repeat'."
-            if optional_input:
-                action_message_content += (
-                    " If you want to skip this optional input, press 'Skip'."
-                )
+        # If user wants to enter input, ask for it
+        if res and res.get("value") == "input":
+            res = await cl.AskUserMessage(content="Please enter your input:").send()
 
-            res = await cl.AskActionMessage(
-                content=action_message_content,
-                actions=actions,
-            ).send()
+            if res:
+                urls = res["output"].split(",")
+                urls = [url.strip() for url in urls]
 
-            if res and res.get("value") == "continue":
-                # Update the task statuses
-                task.status = cl.TaskStatus.DONE
-                await task_list.send()
+                await cl.Message(
+                    content=f"The input you provided is: {urls}.",
+                ).send()
 
-                return urls
+                actions = [
+                    cl.Action(name="continue", value="continue", label="✅ Continue"),
+                    cl.Action(name="repeat", value="repeat", label="🔁 Repeat"),
+                ]
 
-            if res and res.get("value") == "skip":
-                # Update the task statuses
-                task.status = cl.TaskStatus.DONE
-                await task_list.send()
+                res = await cl.AskActionMessage(
+                    content="If this input is correct, press 'Continue'! If you want to enter the input again, press 'Repeat'.",
+                    actions=actions,
+                ).send()
 
-                return None
+                if res and res.get("value") == "continue":
+                    task.status = cl.TaskStatus.DONE
+                    await task_list.send()
+                    return urls
 
 
 @cl.on_chat_start
@@ -137,10 +134,21 @@ async def main():
     )
     await task_list.add_task(creating_task_5)
 
-    returning_task_6 = cl.Task(
+    creating_task_6 = cl.Task(
+        title="Creating SEO metadata based on keywords...", status=cl.TaskStatus.READY
+    )
+    await task_list.add_task(creating_task_6)
+
+    creating_task_7 = cl.Task(
+        title="Creating webpage content based on keywords and SEO metadata...",
+        status=cl.TaskStatus.READY,
+    )
+    await task_list.add_task(creating_task_7)
+
+    returning_task_8 = cl.Task(
         title="Returning content based on keywords...", status=cl.TaskStatus.READY
     )
-    await task_list.add_task(returning_task_6)
+    await task_list.add_task(returning_task_8)
 
     # Update the task list in the interface
     await task_list.send()
@@ -158,7 +166,7 @@ async def main():
         task_list=task_list,
         optional_input=False,
     )
-    asking_task_2.status = cl.TaskStatus.RUNNING
+    asking_task_1.status = cl.TaskStatus.DONE
     await task_list.send()
 
     ## returning webpage content as markdown
@@ -169,6 +177,8 @@ async def main():
         content="This is your current webpage content:",
         elements=elements,
     ).send()
+    asking_task_2.status = cl.TaskStatus.RUNNING
+    await task_list.send()
 
     ## getting user input: competitor websites to extract keywords from
     question_for_user = "If you want, you can now provide relevant competitor webpages, separated by commata:"
@@ -178,26 +188,34 @@ async def main():
         task_list=task_list,
         optional_input=True,
     )
+    asking_task_2.status = cl.TaskStatus.DONE
     returning_task_3.status = cl.TaskStatus.RUNNING
     await task_list.send()
 
-    ## returning the URLs extracted from competitor websites
-    competitor_keyword_list = await process_links(competitor_urls, task_list)
-    await cl.Message(
-        content="This is a list of keywords extracted from the competitor websites your provided.",
-    ).send()
-    # Extract the list of keywords from each SEOKeywords object in the list and flatten into a single list
-    all_keywords = [
-        keyword
-        for seo_keyword_obj in competitor_keyword_list
-        for keyword in seo_keyword_obj.dict().get("seo_keywords", [])
-    ]
-    # Join the list of keywords into a single string
-    competitor_keyword_list_string = ", ".join(all_keywords)
-    await cl.Message(
-        content=competitor_keyword_list_string,
-    ).send()
-    returning_task_3.status = cl.TaskStatus.DONE
+    if competitor_urls:
+        ## returning the keywords extracted from competitor websites
+        competitor_keyword_list = await process_links(competitor_urls, task_list)
+        await cl.Message(
+            content="This is a list of keywords extracted from the competitor websites your provided.",
+        ).send()
+        # Extract the list of keywords from each SEOKeywords object in the list and flatten into a single list
+        all_keywords = [
+            keyword
+            for seo_keyword_obj in competitor_keyword_list
+            for keyword in seo_keyword_obj.dict().get("seo_keywords", [])
+        ]
+        # Join the list of keywords into a single string
+        competitor_keyword_list_string = ", ".join(all_keywords)
+        await cl.Message(
+            content=competitor_keyword_list_string,
+        ).send()
+        returning_task_3.status = cl.TaskStatus.DONE
+        await task_list.send()
+    else:
+        competitor_keyword_list = []
+        returning_task_3.status = cl.TaskStatus.FAILED
+        await task_list.send()
+    asking_task_4.status = cl.TaskStatus.RUNNING
     await task_list.send()
 
     ## getting user input: focused keywords they want to optimize for
@@ -208,10 +226,13 @@ async def main():
         task_list=task_list,
         optional_input=True,
     )
+    asking_task_4.status = cl.TaskStatus.DONE
     creating_task_5.status = cl.TaskStatus.RUNNING
+    creating_task_6.status = cl.TaskStatus.RUNNING
     await task_list.send()
 
     ## generating metadata
+    await task_list.send()
     metadata = await seo_metadata_generator_runnable.ainvoke(
         input={
             "user_keywords": user_keywords,
@@ -219,6 +240,9 @@ async def main():
             "webpage_content": markdown_content,
         }
     )
+    creating_task_6.status = cl.TaskStatus.DONE
+    creating_task_7.status = cl.TaskStatus.RUNNING
+    await task_list.send()
 
     # generating content
     improved_content = await webpage_improvement_runnable.ainvoke(
@@ -230,10 +254,14 @@ async def main():
             "webpage_content": markdown_content,
         }
     )
-
-    # setting overall status to done
-    task_list.status = "DONE"
+    creating_task_7.status = cl.TaskStatus.DONE
+    creating_task_5.status = cl.TaskStatus.DONE
     await task_list.send()
+
+    await cl.Message(
+        content="The following is your improved SEO content:",
+        elements=elements,
+    ).send()
 
     ## Sending the SEO title for the webpage
     text_content = metadata.seo_title
@@ -259,6 +287,11 @@ async def main():
         content="This could be your improved website content:",
         elements=elements,
     ).send()
+
+    returning_task_8.status = cl.TaskStatus.DONE
+    # setting overall status to done
+    task_list.status = "DONE"
+    await task_list.send()
 
 
 @cl.on_message
