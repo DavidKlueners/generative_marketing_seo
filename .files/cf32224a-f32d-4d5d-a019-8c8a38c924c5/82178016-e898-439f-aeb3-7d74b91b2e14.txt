@@ -1,0 +1,42 @@
+- [about](https://www.nexwise.ai/about)
+- [blog](https://www.nexwise.ai/blog)
+
+## consultative selling co-pilot for green technology providers
+
+Our AI-driven consultative co-pilot seamlessly integrates with your website, elevating sales efficiency and customer experience.
+
+![nexwise web application](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FDashboardProvider.d5c66413.png&w=3840&q=75)
+
+### Enhance user engagement with intelligent, consultative interactions and empower your sales with customized insights.
+
+## Start your pilot today
+
+Unlock the power of conversational AI in your green tech sales organization - take the first step towards smarter, more efficient consultative selling!
+
+## empowering green tech industries with AI
+
+### We help green technology providers to drive sustainable growth across their solution portfolio and accelerate solution adoption.
+
+- ![](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FEVCharging.2e606b7a.png&w=1080&q=75)
+
+EV Charging
+
+- ![](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FSolar.f15d3cac.png&w=1080&q=75)
+
+Solar
+
+- ![](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FEnergyManagement.4db940e8.png&w=1080&q=75)
+
+Smart Energy Management
+
+- ![](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FCarbonCapture.3e3b3b58.png&w=1080&q=75)
+
+Carbon Capture
+
+- ![](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FHVAC.8bb96a93.png&w=1080&q=75)
+
+HVAC
+
+- ![](https://www.nexwise.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FBatteryStorage.0c377efb.png&w=1080&q=75)
+
+Battery Storage

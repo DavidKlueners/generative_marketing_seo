@@ -1,7 +1,11 @@
 import chainlit as cl
 from runnables import prompt_input_chain, seo_keyword_generator_runnable
 import asyncio  # Required for asynchronous sleep
-from link_processing import fetch_page_content, extract_text_from_html
+from link_processing import (
+    fetch_page_content,
+    extract_text_from_html,
+    extract_md_from_webpage,
+)
 from typing import Literal
 
 
@@ -31,17 +35,17 @@ async def process_links(links, task_list):
     Function to process the list of links.
     """
     # Add links to task list and get the dictionary of tasks
-    link_tasks_dict = await add_links_to_task_list(links, task_list)
+    # link_tasks_dict = await add_links_to_task_list(links, task_list)
     keywords = []
     # Simulate processing for each link
     for link in links:
-        link_task = link_tasks_dict[link]
-        link_task.status = cl.TaskStatus.RUNNING
-        await task_list.send()
+        # link_task = link_tasks_dict[link]
+        # link_task.status = cl.TaskStatus.RUNNING
+        # await task_list.send()
         keywords.append(await process_individual_link(link=link, task_list=task_list))
-        link_task.status = cl.TaskStatus.DONE
-        await task_list.send()
-    print(keywords)
+        # link_task.status = cl.TaskStatus.DONE
+        # await task_list.send()
+    return keywords
 
 
 async def get_user_input(
@@ -154,6 +158,15 @@ async def main():
     asking_task_2.status = cl.TaskStatus.RUNNING
     await task_list.send()
 
+    ## returning webpage content as markdown
+    markdown_content = await extract_md_from_webpage(webpage_url)
+    elements = [cl.Text(content=markdown_content, display="inline")]
+
+    await cl.Message(
+        content="This is your current webpage content:",
+        elements=elements,
+    ).send()
+
     ## getting user input: competitor websites to extract keywords from
     question_for_user = "If you want, you can now provide relevant competitor webpages, separated by commata:"
     competitor_urls = await get_user_input(
@@ -165,14 +178,38 @@ async def main():
     returning_task_3.status = cl.TaskStatus.RUNNING
     await task_list.send()
 
-    ## getting user input: focused keywords they want to optimize for
-    
-
-    # Call the dummy function to process links
-    await process_links(webpage_url, task_list)
+    ## returning the URLs extracted from competitor websites
+    competitor_keyword_list = await process_links(competitor_urls, task_list)
+    await cl.Message(
+        content="This is a list of keywords extracted from the competitor websites your provided.",
+    ).send()
+    # Extract the list of keywords from each SEOKeywords object in the list and flatten into a single list
+    all_keywords = [
+        keyword
+        for seo_keyword_obj in competitor_keyword_list
+        for keyword in seo_keyword_obj.dict().get("seo_keywords", [])
+    ]
+    # Join the list of keywords into a single string
+    competitor_keyword_list_string = ", ".join(all_keywords)
+    await cl.Message(
+        content=competitor_keyword_list_string,
+    ).send()
     returning_task_3.status = cl.TaskStatus.DONE
-    task_list.status = "DONE"
+    await task_list.send()
 
+    ## getting user input: focused keywords they want to optimize for
+    question_for_user = "If you want, you can now provide additional relevant keywords, separated by commata:"
+    user_keywords = await get_user_input(
+        question_for_user=question_for_user,
+        task=asking_task_4,
+        task_list=task_list,
+        optional_input=True,
+    )
+    creating_task_5.status = cl.TaskStatus.RUNNING
+    await task_list.send()
+
+    # setting overall status to done
+    task_list.status = "DONE"
     await task_list.send()
 
     ## Sending the SEO title for the webpage

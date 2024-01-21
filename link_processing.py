@@ -2,6 +2,11 @@ import requests
 import logging
 from html.parser import HTMLParser
 import html
+from langchain_community.document_loaders import ToMarkdownLoader
+
+from config import TO_MARKDOWN_API_KEY
+
+md_api_key = TO_MARKDOWN_API_KEY
 
 # Configure logging
 logging.basicConfig(
@@ -66,3 +71,15 @@ async def extract_text_from_html(html_content):
     parser = MyHTMLParser()
     parser.feed(html_content)
     return "".join(parser.text_with_tags)
+
+
+async def extract_md_from_webpage(url):
+    res = requests.post(
+        "https://2markdown.com/api/2md",
+        json={"url": url[0]},
+        headers={"X-Api-Key": md_api_key},
+    )
+    if res.status_code == 200:
+        print(res.json()["article"])
+        return res.json()["article"]
+    return None

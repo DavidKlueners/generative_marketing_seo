@@ -13,10 +13,8 @@ if not OPENAI_API_KEY:
 
 openai.api_key = OPENAI_API_KEY
 
-EMBEDDINGS_MODEL = "text-embedding-ada-002"
-EMBEDDINGS_DIMENSIONS = 1536
-
 # for rapid and cheap development ise gpt-3.5-turbo
 OPENAI_MODEL = "gpt-4-1106-preview"  # gpt-4-1106-preview
 OPENAI_TEMPERATURE = 0
 
+TO_MARKDOWN_API_KEY = os.getenv("TO_MARKDOWN_API_KEY")
