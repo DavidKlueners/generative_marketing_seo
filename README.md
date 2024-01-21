@@ -13,3 +13,5 @@ docker run -p 5002:8000 gen-marketing-seo
 ## to check running docker instances
 docker ps
 
+## to shut down instance 
+docker stop <container-id>
