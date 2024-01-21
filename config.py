@@ -18,3 +18,6 @@ OPENAI_MODEL = "gpt-4-1106-preview"  # gpt-4-1106-preview
 OPENAI_TEMPERATURE = 0
 
 TO_MARKDOWN_API_KEY = os.getenv("TO_MARKDOWN_API_KEY")
+
+ADMIN_PW = os.getenv("ADMIN_PW")
+TEST_USER_PW = os.getenv("TEST_USER_PW")

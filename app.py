@@ -11,7 +11,8 @@ from link_processing import (
     extract_text_from_html,
     extract_md_from_webpage,
 )
-from typing import Literal
+from typing import Literal, Optional
+from config import ADMIN_PW, TEST_USER_PW
 
 
 async def add_links_to_task_list(links, task_list):
@@ -100,8 +101,26 @@ async def get_user_input(
                     return urls
 
 
+@cl.password_auth_callback
+def auth_callback(username: str, password: str) -> Optional[cl.User]:
+    # Fetch the user matching username from your database
+    # and compare the hashed password with the value stored in the database
+    if (username, password) == ("admin", ADMIN_PW):
+        return cl.User(
+            identifier="admin", metadata={"role": "admin", "provider": "credentials"}
+        )
+    elif (username, password) == ("test_user", TEST_USER_PW):
+        return cl.User(
+            identifier="test_user",
+            metadata={"role": "test_user", "provider": "credentials"},
+        )
+    else:
+        return None
+
+
 @cl.on_chat_start
 async def main():
+    app_user = cl.user_session.get("user")
     # Create the TaskList
     task_list = cl.TaskList()
     task_list.status = "Running..."
