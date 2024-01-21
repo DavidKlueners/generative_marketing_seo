@@ -8,7 +8,7 @@ from config import (
 from langchain.chains.openai_functions import (
     create_structured_output_runnable,
 )
-from data_models import SEOKeywords
+from data_models import SEOKeywords, SEOMetadata
 
 #### OpenAI model to use
 model = ChatOpenAI(model=OPENAI_MODEL, temperature=OPENAI_TEMPERATURE)
@@ -39,3 +39,23 @@ seo_keyword_generator_runnable = create_structured_output_runnable(
     SEOKeywords, model_gpt4, seo_keyword_generator_prompt
 )
 
+#### chain to generate SEO metadata based on keywords
+model_gpt4 = ChatOpenAI(model="gpt-4-1106-preview", temperature=0)
+seo_metadata_generator_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            (
+                """
+                You are generating SEO metadata for a users webpage based on user provided keywords, competitor keywords and the webpage content.
+                User provided keyowrds: {user_keywords}
+                Competitor keywords: {competitor_keywords}
+                Webpage content: {webpage_content}
+                """
+            ),
+        ),
+    ]
+)
+seo_metadata_generator_runnable = create_structured_output_runnable(
+    SEOMetadata, model_gpt4, seo_metadata_generator_prompt
+)

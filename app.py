@@ -1,5 +1,9 @@
 import chainlit as cl
-from runnables import prompt_input_chain, seo_keyword_generator_runnable
+from runnables import (
+    prompt_input_chain,
+    seo_keyword_generator_runnable,
+    seo_metadata_generator_runnable,
+)
 import asyncio  # Required for asynchronous sleep
 from link_processing import (
     fetch_page_content,
@@ -206,24 +210,33 @@ async def main():
     creating_task_5.status = cl.TaskStatus.RUNNING
     await task_list.send()
 
+    ## generating metadata
+    metadata = await seo_metadata_generator_runnable.ainvoke(
+        input={
+            "user_keywords": user_keywords,
+            "competitor_keywords": competitor_keyword_list,
+            "webpage_content": markdown_content,
+        }
+    )
+
     # setting overall status to done
     task_list.status = "DONE"
     await task_list.send()
 
     ## Sending the SEO title for the webpage
-    text_content = "### Hello, this is a text element showing the SEO title."
+    text_content = metadata.seo_title
     elements = [cl.Text(content=text_content, display="inline")]
 
     await cl.Message(
-        content="This could be your improved website content:",
+        content="This could be your seo title:",
         elements=elements,
     ).send()
     ## Sending the meta description for the webpage
-    text_content = "### Hello, this is a text element showing the SEO meta description."
+    text_content = metadata.seo_description
     elements = [cl.Text(content=text_content, display="inline")]
 
     await cl.Message(
-        content="This could be your improved website content:",
+        content="This could be your metadata description:",
         elements=elements,
     ).send()
     ## Sending the final improved website content.
