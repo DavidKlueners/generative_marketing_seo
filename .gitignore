@@ -1,4 +1,7 @@
-.env
+*.env
+*env.yaml
 *.pyc
 __pycache__/
 *.log
+*.json
+*.txt
